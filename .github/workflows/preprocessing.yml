@@ -1,0 +1,57 @@
+name: Automated Preprocessing Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'winequality_raw/**'
+      - 'preprocessing/automate_Miftah Al Ghifari-Siswa.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  preprocess:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas numpy scikit-learn
+      
+      - name: Run Preprocessing Pipeline
+        run: |
+          cd preprocessing
+          python "automate_Miftah Al Ghifari-Siswa.py"
+      
+      - name: Verify Output
+        run: |
+          echo "=== Checking preprocessed files ==="
+          ls -la preprocessing/winequality_preprocessing/
+          echo ""
+          echo "=== Preview train.csv ==="
+          head -5 preprocessing/winequality_preprocessing/train.csv
+          echo ""
+          echo "=== Preview test.csv ==="
+          head -5 preprocessing/winequality_preprocessing/test.csv
+          echo ""
+          echo "=== Row counts ==="
+          wc -l preprocessing/winequality_preprocessing/*.csv
+      
+      - name: Commit Preprocessed Data
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add preprocessing/winequality_preprocessing/
+          git diff --cached --quiet || git commit -m "chore: auto-update preprocessed dataset [skip ci]"
+          git push
