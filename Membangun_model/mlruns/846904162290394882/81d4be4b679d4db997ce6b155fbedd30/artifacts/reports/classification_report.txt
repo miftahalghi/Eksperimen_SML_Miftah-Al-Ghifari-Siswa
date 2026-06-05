@@ -1,0 +1,11 @@
+Bank Marketing Classification Report
+==================================================
+
+              precision    recall  f1-score   support
+
+          no       0.95      0.96      0.95      7307
+         yes       0.64      0.57      0.60       928
+
+    accuracy                           0.91      8235
+   macro avg       0.79      0.76      0.78      8235
+weighted avg       0.91      0.91      0.91      8235

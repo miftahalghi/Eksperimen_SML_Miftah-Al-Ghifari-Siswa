@@ -1,0 +1,42 @@
+artifact_path: file:///C:/Users/Lenovo/Downloads/SMSML_Miftah Al Ghifari-Siswa/Membangun_model/mlruns/231789158447702074/models/m-4fd353cde6a146d6abd94bd6c0745a1e/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.13.7
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.6.1
+    skops_trusted_types: null
+is_signature_from_type_hint: false
+mlflow_version: 3.13.0
+model_id: m-4fd353cde6a146d6abd94bd6c0745a1e
+model_size_bytes: 45318756
+model_uuid: m-4fd353cde6a146d6abd94bd6c0745a1e
+prompts: null
+run_id: 2c5e4e46d8894838bbc84599f45ecfe3
+signature:
+  inputs: '[{"type": "double", "name": "age", "required": true}, {"type": "double",
+    "name": "job", "required": true}, {"type": "double", "name": "marital", "required":
+    true}, {"type": "double", "name": "education", "required": true}, {"type": "double",
+    "name": "default", "required": true}, {"type": "double", "name": "housing", "required":
+    true}, {"type": "double", "name": "loan", "required": true}, {"type": "double",
+    "name": "contact", "required": true}, {"type": "double", "name": "month", "required":
+    true}, {"type": "double", "name": "day_of_week", "required": true}, {"type": "double",
+    "name": "duration", "required": true}, {"type": "double", "name": "campaign",
+    "required": true}, {"type": "double", "name": "pdays", "required": true}, {"type":
+    "double", "name": "previous", "required": true}, {"type": "double", "name": "poutcome",
+    "required": true}, {"type": "double", "name": "emp.var.rate", "required": true},
+    {"type": "double", "name": "cons.price.idx", "required": true}, {"type": "double",
+    "name": "cons.conf.idx", "required": true}, {"type": "double", "name": "euribor3m",
+    "required": true}, {"type": "double", "name": "nr.employed", "required": true}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "int64", "shape": [-1]}}]'
+  params: null
+type_hint_from_example: false
+utc_time_created: '2026-06-05 16:21:52.341552'

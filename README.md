@@ -1,10 +1,10 @@
 # Eksperimen SML — Miftah Al Ghifari
 
-Project Bootcamp Sistem Machine Learning — Eksperimen dan Preprocessing Wine Quality Dataset.
+Project Bootcamp Sistem Machine Learning — Eksperimen dan Preprocessing Bank Marketing Dataset.
 
 ## 📋 Deskripsi
 
-Repository ini berisi eksperimen machine learning untuk dataset **Wine Quality** dari UCI ML Repository. Proyek ini mencakup tahapan lengkap dari eksplorasi data (EDA) hingga otomatisasi preprocessing menggunakan GitHub Actions.
+Repository ini berisi eksperimen machine learning untuk dataset **Bank Marketing** dari UCI ML Repository. Proyek ini mencakup tahapan lengkap dari eksplorasi data (EDA) hingga otomatisasi preprocessing menggunakan GitHub Actions.
 
 ## 📁 Struktur Folder
 
@@ -13,13 +13,13 @@ Eksperimen_SML_Miftah Al Ghifari-Siswa/
 ├── .github/
 │   └── workflows/
 │       └── preprocessing.yml          # GitHub Actions untuk auto-preprocessing
-├── winequality_raw/
-│   └── winequality-red.csv            # Dataset mentah
+├── bankmarketing_raw/
+│   └── bank-additional-full.csv       # Dataset mentah
 ├── preprocessing/
 │   ├── Eksperimen_Miftah Al Ghifari-Siswa.ipynb  # Notebook eksperimen
 │   ├── automate_Miftah Al Ghifari-Siswa.py       # Script otomatisasi
-│   └── winequality_preprocessing/     # Hasil preprocessing
-│       ├── winequality_preprocessed.csv
+│   └── bankmarketing_preprocessing/     # Hasil preprocessing
+│       ├── bankmarketing_preprocessed.csv
 │       ├── train.csv
 │       └── test.csv
 └── README.md
@@ -27,8 +27,8 @@ Eksperimen_SML_Miftah Al Ghifari-Siswa/
 
 ## 🔬 Dataset
 
-- **Nama**: Wine Quality Dataset (Red Wine)
-- **Sumber**: [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/wine+quality)
+- **Nama**: Bank Marketing Dataset
+- **Sumber**: [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/bank+marketing)
 - **Jumlah Sampel**: 1,599
 - **Fitur**: 11 fitur numerik (fixed acidity, volatile acidity, citric acid, dll.)
 - **Target**: quality (3-8) → dikategorikan menjadi low, medium, high

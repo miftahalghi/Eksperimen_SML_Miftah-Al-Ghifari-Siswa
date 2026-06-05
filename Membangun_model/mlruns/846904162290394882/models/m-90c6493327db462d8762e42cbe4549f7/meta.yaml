@@ -1,0 +1,10 @@
+artifact_location: file:///C:/Users/Lenovo/Downloads/SMSML_Miftah Al Ghifari-Siswa/Membangun_model/mlruns/846904162290394882/models/m-90c6493327db462d8762e42cbe4549f7/artifacts
+creation_timestamp: 1780676910617
+experiment_id: '846904162290394882'
+last_updated_timestamp: 1780676921041
+model_id: m-90c6493327db462d8762e42cbe4549f7
+model_type: null
+name: model
+source_run_id: 81d4be4b679d4db997ce6b155fbedd30
+status: 2
+status_message: null

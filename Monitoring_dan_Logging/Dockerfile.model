@@ -1,0 +1,19 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+
+COPY model_artifact /model_artifact
+COPY serve_model.py /app/serve_model.py
+
+# Install only what's needed for serving
+RUN pip install --no-cache-dir \
+    flask \
+    scikit-learn==1.6.1 \
+    numpy
+
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
+EXPOSE 8080
+
+CMD ["python", "serve_model.py"]

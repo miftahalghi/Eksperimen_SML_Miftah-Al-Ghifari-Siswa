@@ -1,14 +1,13 @@
 """
 modelling_tuning.py
 ====================
-Advanced Model Training with Hyperparameter Tuning, Manual Logging, and DagsHub Integration.
+Advanced Model Training with Hyperparameter Tuning and Manual Logging.
 
 Kriteria 2 - Skilled (3 pts):
-- Hyperparameter tuning with GridSearchCV/RandomizedSearchCV
+- Hyperparameter tuning with RandomizedSearchCV
 - Manual logging (not autolog) with same metrics as autolog
 
 Kriteria 2 - Advance (4 pts):
-- MLflow Tracking UI saved to DagsHub (online)
 - Manual logging with autolog metrics + minimal 2 additional artifacts
   - Artifact 1: Classification Report (text file)
   - Artifact 2: Feature Importance Plot (image)
@@ -36,50 +35,21 @@ from sklearn.metrics import (
 )
 import mlflow
 import mlflow.sklearn
-from scipy.stats import randint, uniform
+from scipy.stats import randint
 
 # ============================================================
 # CONFIGURATION
 # ============================================================
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'winequality_preprocessing')
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bankmarketing_preprocessing')
 TRAIN_PATH = os.path.join(DATA_DIR, 'train.csv')
 TEST_PATH = os.path.join(DATA_DIR, 'test.csv')
 
-EXPERIMENT_NAME = "Wine_Quality_Classification_Tuning"
+EXPERIMENT_NAME = "Bank_Marketing_Classification_Tuning"
 RANDOM_STATE = 42
-TARGET_NAMES = ['high', 'low', 'medium']
+TARGET_NAMES = ['no', 'yes']
 
-# ============================================================
-# DagsHub Configuration (Advance)
-# ============================================================
-# IMPORTANT: Replace these with your actual DagsHub credentials
-# You can also set them as environment variables:
-#   MLFLOW_TRACKING_URI, MLFLOW_TRACKING_USERNAME, MLFLOW_TRACKING_PASSWORD
-
-DAGSHUB_USERNAME = os.environ.get('DAGSHUB_USERNAME', 'YOUR_DAGSHUB_USERNAME')
-DAGSHUB_REPO_NAME = os.environ.get('DAGSHUB_REPO_NAME', 'wine-quality-ml')
-DAGSHUB_TOKEN = os.environ.get('DAGSHUB_TOKEN', 'YOUR_DAGSHUB_TOKEN')
-
-USE_DAGSHUB = os.environ.get('USE_DAGSHUB', 'false').lower() == 'true'
-
-if not USE_DAGSHUB:
-    MLRUNS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mlruns')
-    mlflow.set_tracking_uri(f"file:///{MLRUNS_DIR.replace(os.sep, '/')}")
-
-
-
-def setup_dagshub():
-    """Configure MLflow to track to DagsHub."""
-    tracking_uri = f"https://dagshub.com/{DAGSHUB_USERNAME}/{DAGSHUB_REPO_NAME}.mlflow"
-    
-    os.environ['MLFLOW_TRACKING_URI'] = tracking_uri
-    os.environ['MLFLOW_TRACKING_USERNAME'] = DAGSHUB_USERNAME
-    os.environ['MLFLOW_TRACKING_PASSWORD'] = DAGSHUB_TOKEN
-    
-    mlflow.set_tracking_uri(tracking_uri)
-    
-    print(f"MLflow Tracking URI set to: {tracking_uri}")
-    print(f"DagsHub Username: {DAGSHUB_USERNAME}")
+MLRUNS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mlruns')
+mlflow.set_tracking_uri(f"file:///{MLRUNS_DIR.replace(os.sep, '/')}")
 
 
 def load_data():
@@ -87,7 +57,7 @@ def load_data():
     train_df = pd.read_csv(TRAIN_PATH)
     test_df = pd.read_csv(TEST_PATH)
     
-    target_col = 'quality_encoded'
+    target_col = 'y'
     
     X_train = train_df.drop(columns=[target_col])
     y_train = train_df[target_col]
@@ -103,13 +73,9 @@ def load_data():
 def hyperparameter_tuning(X_train, y_train):
     """
     Perform hyperparameter tuning using RandomizedSearchCV.
-    
-    Returns:
-        Tuple of (best_model, best_params, cv_results)
     """
     print("\n--- Hyperparameter Tuning (RandomizedSearchCV) ---")
     
-    # Define parameter distributions
     param_distributions = {
         'n_estimators': randint(50, 300),
         'max_depth': [5, 10, 15, 20, 25, None],
@@ -120,10 +86,8 @@ def hyperparameter_tuning(X_train, y_train):
         'criterion': ['gini', 'entropy']
     }
     
-    # Base model
     rf = RandomForestClassifier(random_state=RANDOM_STATE)
     
-    # RandomizedSearchCV
     random_search = RandomizedSearchCV(
         estimator=rf,
         param_distributions=param_distributions,
@@ -144,12 +108,7 @@ def hyperparameter_tuning(X_train, y_train):
 
 
 def evaluate_model(model, X_test, y_test):
-    """
-    Evaluate model and return all metrics.
-    
-    Returns:
-        Dictionary of metrics
-    """
+    """Evaluate model and return all metrics."""
     y_pred = model.predict(X_test)
     y_pred_proba = model.predict_proba(X_test)
     
@@ -172,38 +131,30 @@ def evaluate_model(model, X_test, y_test):
 
 
 def create_classification_report_artifact(y_test, y_pred, artifact_dir):
-    """
-    Create classification report as text and JSON artifact.
-    Artifact 1 (Advance requirement).
-    """
+    """Create classification report as text and JSON artifact."""
     report_text = classification_report(y_test, y_pred, target_names=TARGET_NAMES)
     report_dict = classification_report(y_test, y_pred, target_names=TARGET_NAMES, output_dict=True)
     
-    # Save as text
     report_path = os.path.join(artifact_dir, 'classification_report.txt')
     with open(report_path, 'w') as f:
-        f.write("Wine Quality Classification Report\n")
+        f.write("Bank Marketing Classification Report\n")
         f.write("=" * 50 + "\n\n")
         f.write(report_text)
     
-    # Save as JSON
     report_json_path = os.path.join(artifact_dir, 'classification_report.json')
     with open(report_json_path, 'w') as f:
         json.dump(report_dict, f, indent=2, default=str)
     
-    print(f"\n  [OK] Classification Report saved to: {report_path}")
+    print(f"\n  [OK] Classification Report saved")
     return report_path, report_json_path
 
 
 def create_feature_importance_artifact(model, feature_names, artifact_dir):
-    """
-    Create feature importance plot as image artifact.
-    Artifact 2 (Advance requirement).
-    """
+    """Create feature importance plot as image artifact."""
     importances = model.feature_importances_
     indices = np.argsort(importances)[::-1]
     
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(12, 10))
     
     colors = plt.cm.viridis(np.linspace(0.3, 0.9, len(feature_names)))
     
@@ -216,15 +167,14 @@ def create_feature_importance_artifact(model, feature_names, artifact_dir):
     )
     
     ax.set_yticks(range(len(feature_names)))
-    ax.set_yticklabels([feature_names[i] for i in indices], fontsize=11)
+    ax.set_yticklabels([feature_names[i] for i in indices], fontsize=10)
     ax.set_xlabel('Feature Importance', fontsize=12)
-    ax.set_title('Random Forest - Feature Importance\n(Wine Quality Classification)', 
+    ax.set_title('Random Forest - Feature Importance\n(Bank Marketing Classification)', 
                  fontsize=14, fontweight='bold')
     ax.invert_yaxis()
     
-    # Add value labels
     for i, (bar, imp) in enumerate(zip(bars, importances[indices])):
-        ax.text(imp + 0.002, i, f'{imp:.4f}', va='center', fontsize=10)
+        ax.text(imp + 0.002, i, f'{imp:.4f}', va='center', fontsize=9)
     
     plt.tight_layout()
     
@@ -232,18 +182,15 @@ def create_feature_importance_artifact(model, feature_names, artifact_dir):
     fig.savefig(plot_path, dpi=150, bbox_inches='tight')
     plt.close(fig)
     
-    print(f"  [OK] Feature Importance Plot saved to: {plot_path}")
+    print(f"  [OK] Feature Importance Plot saved")
     return plot_path
 
 
 def create_confusion_matrix_artifact(y_test, y_pred, artifact_dir):
-    """
-    Create confusion matrix heatmap as image artifact.
-    Artifact 3 (Advance bonus).
-    """
+    """Create confusion matrix heatmap as image artifact."""
     cm = confusion_matrix(y_test, y_pred)
     
-    fig, ax = plt.subplots(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(8, 6))
     
     sns.heatmap(
         cm, annot=True, fmt='d', cmap='Blues',
@@ -257,7 +204,7 @@ def create_confusion_matrix_artifact(y_test, y_pred, artifact_dir):
     
     ax.set_xlabel('Predicted Label', fontsize=12)
     ax.set_ylabel('True Label', fontsize=12)
-    ax.set_title('Confusion Matrix\n(Wine Quality Classification)', 
+    ax.set_title('Confusion Matrix\n(Bank Marketing Classification)', 
                  fontsize=14, fontweight='bold')
     
     plt.tight_layout()
@@ -266,23 +213,16 @@ def create_confusion_matrix_artifact(y_test, y_pred, artifact_dir):
     fig.savefig(plot_path, dpi=150, bbox_inches='tight')
     plt.close(fig)
     
-    print(f"  [OK] Confusion Matrix Heatmap saved to: {plot_path}")
+    print(f"  [OK] Confusion Matrix Heatmap saved")
     return plot_path
 
 
 def main():
-    """Main function: Full pipeline with manual logging and DagsHub integration."""
+    """Main function: Full pipeline with manual logging."""
     print("=" * 60)
-    print("WINE QUALITY - MODEL TRAINING WITH TUNING")
-    print("(Manual Logging + DagsHub Integration)")
+    print("BANK MARKETING - MODEL TRAINING WITH TUNING")
+    print("(Manual Logging)")
     print("=" * 60)
-    
-    # Setup DagsHub if enabled
-    if USE_DAGSHUB:
-        setup_dagshub()
-        print("[ONLINE] Tracking to DagsHub")
-    else:
-        print("[LOCAL] Tracking locally (set USE_DAGSHUB=true to track online)")
     
     # Set experiment
     mlflow.set_experiment(EXPERIMENT_NAME)
@@ -300,9 +240,7 @@ def main():
     # Start MLflow run with MANUAL LOGGING
     with mlflow.start_run(run_name="RandomForest_Tuned_Manual"):
         
-        # ---- Manual Parameter Logging ----
         print("\n--- Logging to MLflow (Manual) ---")
-
         
         # Log all hyperparameters
         for param_name, param_value in best_params.items():
@@ -318,8 +256,7 @@ def main():
         mlflow.log_param("test_samples", X_test.shape[0])
         mlflow.log_param("n_features", X_train.shape[1])
         
-        # ---- Manual Metrics Logging ----
-        # Log all metrics (same as autolog would log)
+        # Log all metrics
         for metric_name, metric_value in metrics.items():
             mlflow.log_metric(metric_name, metric_value)
             print(f"  [METRIC] {metric_name} = {metric_value:.4f}")
@@ -327,15 +264,15 @@ def main():
         # Log best CV score
         mlflow.log_metric("best_cv_score", float(cv_results['mean_test_score'].max()))
         
-        # ---- Manual Model Logging ----
+        # Log model
         mlflow.sklearn.log_model(
             best_model,
             artifact_path="model",
-            registered_model_name="wine-quality-rf-tuned"
+            registered_model_name="bank-marketing-rf-tuned"
         )
         print("  [MODEL] Model logged")
         
-        # ---- Additional Artifacts (Advance: min 2 extra) ----
+        # Additional Artifacts
         print("\n--- Creating Additional Artifacts ---")
         
         with tempfile.TemporaryDirectory() as artifact_dir:
@@ -361,7 +298,7 @@ def main():
         # Log tags
         mlflow.set_tag("stage", "tuning")
         mlflow.set_tag("model_type", "RandomForest")
-        mlflow.set_tag("dataset", "wine-quality-red")
+        mlflow.set_tag("dataset", "bank-marketing")
         
         run_id = mlflow.active_run().info.run_id
         print(f"\n  [RUN_ID] {run_id}")
@@ -371,13 +308,8 @@ def main():
     print("\n" + "=" * 60)
     print("TRAINING WITH TUNING COMPLETED SUCCESSFULLY")
     print("=" * 60)
-    
-    if USE_DAGSHUB:
-        dagshub_url = f"https://dagshub.com/{DAGSHUB_USERNAME}/{DAGSHUB_REPO_NAME}"
-        print(f"\nView results on DagsHub: {dagshub_url}")
-    else:
-        print("\nTo view results locally, run: mlflow ui")
-        print("Then open: http://localhost:5000")
+    print("\nTo view results locally, run: mlflow ui")
+    print("Then open: http://localhost:5000")
     
     return run_id
 

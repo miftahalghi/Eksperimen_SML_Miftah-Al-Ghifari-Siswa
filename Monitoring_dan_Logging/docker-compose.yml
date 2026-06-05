@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # ============================================================
+  # Prometheus Exporter (ML Model Metrics)
+  # ============================================================
+  prometheus-exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile.exporter
+    container_name: ml-prometheus-exporter
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_SERVING_URL=http://model-serving:8080/invocations
+    depends_on:
+      - model-serving
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # ============================================================
+  # Model Serving (MLflow)
+  # ============================================================
+  model-serving:
+    build:
+      context: .
+      dockerfile: Dockerfile.model
+    container_name: ml-model-serving
+    ports:
+      - "5001:8080"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # ============================================================
+  # Prometheus
+  # ============================================================
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: ml-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./2.prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    depends_on:
+      - prometheus-exporter
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # ============================================================
+  # Grafana
+  # ============================================================
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: ml-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+  grafana_data:

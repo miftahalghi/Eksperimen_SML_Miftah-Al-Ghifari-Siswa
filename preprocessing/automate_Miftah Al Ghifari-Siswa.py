@@ -1,14 +1,14 @@
 """
 automate_Miftah Al Ghifari-Siswa.py
 ====================================
-Automated preprocessing pipeline for Wine Quality Dataset.
+Automated preprocessing pipeline for Bank Marketing Dataset (UCI).
 Converts the manual experiment notebook into a reusable, automated script.
+
+Dataset: Bank Marketing (UCI ML Repository)
+Task: Binary classification - predict if client will subscribe a term deposit (yes/no)
 
 Usage:
     python "automate_Miftah Al Ghifari-Siswa.py"
-    
-Or import as module:
-    from automate_Miftah_Al_Ghifari_Siswa import preprocess_pipeline
 """
 
 import os
@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 # ============================================================
 def load_data(path: str) -> pd.DataFrame:
     """
-    Load raw Wine Quality dataset from CSV.
+    Load raw Bank Marketing dataset from CSV.
     
     Args:
         path: Path to the raw CSV file (semicolon-separated)
@@ -59,8 +59,8 @@ def load_data(path: str) -> pd.DataFrame:
 def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
     """
     Check and handle missing values in the dataset.
-    Strategy: Drop rows with missing values if < 5% of data,
-              otherwise fill with median for numerical columns.
+    Bank Marketing dataset uses 'unknown' as missing value marker.
+    Strategy: Replace 'unknown' with mode for categorical columns.
     
     Args:
         df: Input DataFrame
@@ -70,24 +70,27 @@ def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
     """
     logger.info("Handling missing values...")
     
+    # Check for actual NaN
     missing_count = df.isnull().sum().sum()
-    missing_pct = (missing_count / (df.shape[0] * df.shape[1])) * 100
-    
-    if missing_count == 0:
-        logger.info("No missing values found.")
-        return df
-    
-    logger.info(f"Found {missing_count} missing values ({missing_pct:.2f}%)")
-    
-    if missing_pct < 5:
+    if missing_count > 0:
+        logger.info(f"Found {missing_count} NaN values")
         df = df.dropna()
-        logger.info(f"Dropped rows with missing values. Remaining: {df.shape[0]} rows")
-    else:
-        for col in df.select_dtypes(include=[np.number]).columns:
-            if df[col].isnull().sum() > 0:
-                median_val = df[col].median()
-                df[col] = df[col].fillna(median_val)
-                logger.info(f"  Filled '{col}' missing values with median: {median_val}")
+    
+    # Check for 'unknown' values in categorical columns
+    cat_cols = df.select_dtypes(include=['object']).columns
+    unknown_counts = {}
+    
+    for col in cat_cols:
+        unknown_count = (df[col] == 'unknown').sum()
+        if unknown_count > 0:
+            unknown_counts[col] = unknown_count
+            # Replace 'unknown' with mode
+            mode_val = df[df[col] != 'unknown'][col].mode()[0]
+            df[col] = df[col].replace('unknown', mode_val)
+            logger.info(f"  '{col}': replaced {unknown_count} 'unknown' values with mode='{mode_val}'")
+    
+    if not unknown_counts:
+        logger.info("No 'unknown' values found.")
     
     return df
 
@@ -98,12 +101,6 @@ def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
 def remove_duplicates(df: pd.DataFrame) -> pd.DataFrame:
     """
     Remove duplicate rows from the dataset.
-    
-    Args:
-        df: Input DataFrame
-    
-    Returns:
-        DataFrame with duplicates removed
     """
     logger.info("Checking for duplicate rows...")
     
@@ -123,21 +120,13 @@ def remove_duplicates(df: pd.DataFrame) -> pd.DataFrame:
 # ============================================================
 def handle_outliers(df: pd.DataFrame, columns: list = None, threshold: float = 1.5) -> pd.DataFrame:
     """
-    Detect and handle outliers using IQR (Interquartile Range) method.
+    Detect and handle outliers using IQR method on numeric columns.
     Strategy: Cap outliers at Q1 - threshold*IQR and Q3 + threshold*IQR.
-    
-    Args:
-        df: Input DataFrame
-        columns: List of columns to check (default: all numeric columns except 'quality')
-        threshold: IQR multiplier for outlier detection (default: 1.5)
-    
-    Returns:
-        DataFrame with outliers handled
     """
     logger.info(f"Handling outliers using IQR method (threshold={threshold})...")
     
     if columns is None:
-        columns = [col for col in df.select_dtypes(include=[np.number]).columns if col != 'quality']
+        columns = df.select_dtypes(include=[np.number]).columns.tolist()
     
     total_outliers = 0
     
@@ -162,47 +151,28 @@ def handle_outliers(df: pd.DataFrame, columns: list = None, threshold: float = 1
 
 
 # ============================================================
-# 5. TARGET ENCODING (Quality → Categories)
+# 5. ENCODING CATEGORICAL FEATURES
 # ============================================================
-def encode_target(df: pd.DataFrame) -> pd.DataFrame:
+def encode_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Encode the 'quality' column into categorical labels.
-    Binning: quality 3-4 → 'low', 5-6 → 'medium', 7-9 → 'high'
-    Then encode using LabelEncoder: high=0, low=1, medium=2
-    
-    Args:
-        df: Input DataFrame with 'quality' column
-    
-    Returns:
-        DataFrame with encoded 'quality_label' column
+    Encode categorical features and target variable.
+    - Target 'y': yes=1, no=0
+    - Categorical features: LabelEncoder
     """
-    logger.info("Encoding target variable (quality → categories)...")
+    logger.info("Encoding categorical features...")
     
-    # Create categorical bins
-    def quality_category(q):
-        if q <= 4:
-            return 'low'
-        elif q <= 6:
-            return 'medium'
-        else:
-            return 'high'
+    # Encode target variable
+    df['y'] = df['y'].map({'yes': 1, 'no': 0})
+    logger.info(f"Target 'y' encoded: no=0, yes=1")
+    logger.info(f"Target distribution: {dict(df['y'].value_counts())}")
     
-    df['quality_label'] = df['quality'].apply(quality_category)
+    # Encode categorical features using LabelEncoder
+    cat_cols = df.select_dtypes(include=['object']).columns.tolist()
     
-    # Log distribution
-    dist = df['quality_label'].value_counts()
-    logger.info(f"Quality distribution after encoding:")
-    for label, count in dist.items():
-        logger.info(f"  {label}: {count} ({count/len(df)*100:.1f}%)")
-    
-    # Label encode
-    le = LabelEncoder()
-    df['quality_encoded'] = le.fit_transform(df['quality_label'])
-    
-    logger.info(f"Label encoding: {dict(zip(le.classes_, le.transform(le.classes_)))}")
-    
-    # Drop original quality and quality_label
-    df = df.drop(columns=['quality', 'quality_label'])
+    for col in cat_cols:
+        le = LabelEncoder()
+        df[col] = le.fit_transform(df[col])
+        logger.info(f"  Encoded '{col}': {dict(zip(le.classes_, le.transform(le.classes_)))}")
     
     return df
 
@@ -210,16 +180,9 @@ def encode_target(df: pd.DataFrame) -> pd.DataFrame:
 # ============================================================
 # 6. FEATURE SCALING
 # ============================================================
-def scale_features(df: pd.DataFrame, target_col: str = 'quality_encoded') -> pd.DataFrame:
+def scale_features(df: pd.DataFrame, target_col: str = 'y') -> pd.DataFrame:
     """
     Apply StandardScaler to all feature columns (except target).
-    
-    Args:
-        df: Input DataFrame
-        target_col: Name of the target column to exclude from scaling
-    
-    Returns:
-        DataFrame with scaled features
     """
     logger.info("Scaling features using StandardScaler...")
     
@@ -228,7 +191,7 @@ def scale_features(df: pd.DataFrame, target_col: str = 'quality_encoded') -> pd.
     scaler = StandardScaler()
     df[feature_cols] = scaler.fit_transform(df[feature_cols])
     
-    logger.info(f"Scaled {len(feature_cols)} feature columns: {feature_cols}")
+    logger.info(f"Scaled {len(feature_cols)} feature columns")
     
     return df
 
@@ -236,19 +199,10 @@ def scale_features(df: pd.DataFrame, target_col: str = 'quality_encoded') -> pd.
 # ============================================================
 # 7. TRAIN-TEST SPLIT
 # ============================================================
-def split_data(df: pd.DataFrame, target_col: str = 'quality_encoded',
+def split_data(df: pd.DataFrame, target_col: str = 'y',
                test_size: float = 0.2, random_state: int = 42) -> dict:
     """
     Split data into training and testing sets.
-    
-    Args:
-        df: Input DataFrame
-        target_col: Name of the target column
-        test_size: Proportion of test set (default: 0.2)
-        random_state: Random seed for reproducibility
-    
-    Returns:
-        Dictionary with X_train, X_test, y_train, y_test
     """
     logger.info(f"Splitting data (test_size={test_size}, random_state={random_state})...")
     
@@ -276,10 +230,6 @@ def split_data(df: pd.DataFrame, target_col: str = 'quality_encoded',
 def save_preprocessed(data: dict, output_dir: str):
     """
     Save preprocessed train and test datasets to CSV files.
-    
-    Args:
-        data: Dictionary with X_train, X_test, y_train, y_test
-        output_dir: Directory to save the preprocessed files
     """
     logger.info(f"Saving preprocessed data to: {output_dir}")
     
@@ -295,11 +245,11 @@ def save_preprocessed(data: dict, output_dir: str):
     # Save files
     train_df.to_csv(os.path.join(output_dir, 'train.csv'), index=False)
     test_df.to_csv(os.path.join(output_dir, 'test.csv'), index=False)
-    full_df.to_csv(os.path.join(output_dir, 'winequality_preprocessed.csv'), index=False)
+    full_df.to_csv(os.path.join(output_dir, 'bankmarketing_preprocessed.csv'), index=False)
     
-    logger.info(f"Saved train.csv ({train_df.shape[0]} rows)")
-    logger.info(f"Saved test.csv ({test_df.shape[0]} rows)")
-    logger.info(f"Saved winequality_preprocessed.csv ({full_df.shape[0]} rows)")
+    logger.info(f"Saved train.csv ({train_df.shape[0]} rows, {train_df.shape[1]} cols)")
+    logger.info(f"Saved test.csv ({test_df.shape[0]} rows, {test_df.shape[1]} cols)")
+    logger.info(f"Saved bankmarketing_preprocessed.csv ({full_df.shape[0]} rows)")
 
 
 # ============================================================
@@ -308,32 +258,28 @@ def save_preprocessed(data: dict, output_dir: str):
 def preprocess_pipeline(input_path: str, output_dir: str) -> dict:
     """
     Execute the full preprocessing pipeline.
-    
-    Args:
-        input_path: Path to raw dataset CSV
-        output_dir: Directory to save preprocessed data
-    
-    Returns:
-        Dictionary with X_train, X_test, y_train, y_test
     """
     logger.info("=" * 60)
-    logger.info("STARTING PREPROCESSING PIPELINE")
+    logger.info("STARTING PREPROCESSING PIPELINE - BANK MARKETING")
     logger.info("=" * 60)
     
     # Step 1: Load data
     df = load_data(input_path)
     
-    # Step 2: Handle missing values
+    # Step 2: Handle missing values (including 'unknown')
     df = handle_missing_values(df)
     
     # Step 3: Remove duplicates
     df = remove_duplicates(df)
     
-    # Step 4: Handle outliers
-    df = handle_outliers(df)
+    # Step 4: Handle outliers (numeric columns only)
+    numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    # Exclude target 'y' if already numeric at this point
+    numeric_cols = [c for c in numeric_cols if c != 'y']
+    df = handle_outliers(df, columns=numeric_cols)
     
-    # Step 5: Encode target
-    df = encode_target(df)
+    # Step 5: Encode categorical features + target
+    df = encode_features(df)
     
     # Step 6: Scale features
     df = scale_features(df)
@@ -359,8 +305,8 @@ if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_dir = os.path.dirname(script_dir)
     
-    input_path = os.path.join(project_dir, 'winequality_raw', 'winequality-red.csv')
-    output_dir = os.path.join(script_dir, 'winequality_preprocessing')
+    input_path = os.path.join(project_dir, 'bankmarketing_raw', 'bank-additional-full.csv')
+    output_dir = os.path.join(script_dir, 'bankmarketing_preprocessing')
     
     # Run pipeline
     preprocess_pipeline(input_path, output_dir)

@@ -1,0 +1,9 @@
+artifact_location: file:///C:/Users/Lenovo/Downloads/SMSML_Miftah Al Ghifari-Siswa/Membangun_model/mlruns/231789158447702074
+creation_time: 1780676505660
+effective_trace_archival_retention: null
+experiment_id: '231789158447702074'
+last_update_time: 1780676505660
+lifecycle_stage: active
+name: Bank_Marketing_Classification
+trace_location: null
+workspace: default

@@ -1,0 +1,15 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir \
+    prometheus_client \
+    psutil \
+    requests \
+    numpy
+
+COPY 3.prometheus_exporter.py .
+
+EXPOSE 8000
+
+CMD ["python", "3.prometheus_exporter.py"]

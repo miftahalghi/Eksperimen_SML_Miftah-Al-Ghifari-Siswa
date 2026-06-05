@@ -2,7 +2,7 @@
 modelling.py
 ============
 Basic Model Training with MLflow Autolog.
-Trains a RandomForestClassifier on the preprocessed Wine Quality dataset
+Trains a RandomForestClassifier on the preprocessed Bank Marketing dataset
 using MLflow's autolog feature for experiment tracking.
 
 Kriteria 2 - Basic (2 pts):
@@ -25,16 +25,15 @@ import mlflow.sklearn
 # ============================================================
 # CONFIGURATION
 # ============================================================
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'winequality_preprocessing')
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bankmarketing_preprocessing')
 TRAIN_PATH = os.path.join(DATA_DIR, 'train.csv')
 TEST_PATH = os.path.join(DATA_DIR, 'test.csv')
 
-EXPERIMENT_NAME = "Wine_Quality_Classification"
+EXPERIMENT_NAME = "Bank_Marketing_Classification"
 RANDOM_STATE = 42
 
 MLRUNS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mlruns')
 mlflow.set_tracking_uri(f"file:///{MLRUNS_DIR.replace(os.sep, '/')}")
-
 
 
 def load_data():
@@ -42,7 +41,7 @@ def load_data():
     train_df = pd.read_csv(TRAIN_PATH)
     test_df = pd.read_csv(TEST_PATH)
     
-    target_col = 'quality_encoded'
+    target_col = 'y'
     
     X_train = train_df.drop(columns=[target_col])
     y_train = train_df[target_col]
@@ -71,7 +70,7 @@ def evaluate_model(model, X_test, y_test):
     y_pred = model.predict(X_test)
     
     accuracy = accuracy_score(y_test, y_pred)
-    report = classification_report(y_test, y_pred, target_names=['high', 'low', 'medium'])
+    report = classification_report(y_test, y_pred, target_names=['no', 'yes'])
     
     print(f"\nTest Accuracy: {accuracy:.4f}")
     print(f"\nClassification Report:\n{report}")
@@ -82,7 +81,7 @@ def evaluate_model(model, X_test, y_test):
 def main():
     """Main function: Load data, train model, evaluate, log with MLflow autolog."""
     print("=" * 60)
-    print("WINE QUALITY - MODEL TRAINING (AUTOLOG)")
+    print("BANK MARKETING - MODEL TRAINING (AUTOLOG)")
     print("=" * 60)
     
     # Set MLflow experiment

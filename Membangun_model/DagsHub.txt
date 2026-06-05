@@ -1,1 +1,1 @@
-https://dagshub.com/miftahalghi/wine-quality-ml
+https://dagshub.com/miftahalghi/bank-marketing-ml

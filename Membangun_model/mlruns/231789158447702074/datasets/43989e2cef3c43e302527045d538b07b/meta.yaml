@@ -1,0 +1,21 @@
+digest: f0edf0ca
+name: dataset
+profile: '{"num_rows": 8235, "num_elements": 164700}'
+schema: '{"mlflow_colspec": [{"type": "double", "name": "age", "required": true},
+  {"type": "double", "name": "job", "required": true}, {"type": "double", "name":
+  "marital", "required": true}, {"type": "double", "name": "education", "required":
+  true}, {"type": "double", "name": "default", "required": true}, {"type": "double",
+  "name": "housing", "required": true}, {"type": "double", "name": "loan", "required":
+  true}, {"type": "double", "name": "contact", "required": true}, {"type": "double",
+  "name": "month", "required": true}, {"type": "double", "name": "day_of_week", "required":
+  true}, {"type": "double", "name": "duration", "required": true}, {"type": "double",
+  "name": "campaign", "required": true}, {"type": "double", "name": "pdays", "required":
+  true}, {"type": "double", "name": "previous", "required": true}, {"type": "double",
+  "name": "poutcome", "required": true}, {"type": "double", "name": "emp.var.rate",
+  "required": true}, {"type": "double", "name": "cons.price.idx", "required": true},
+  {"type": "double", "name": "cons.conf.idx", "required": true}, {"type": "double",
+  "name": "euribor3m", "required": true}, {"type": "double", "name": "nr.employed",
+  "required": true}]}'
+source: '{"tags": {"mlflow.user": "Lenovo", "mlflow.source.name": "modelling.py",
+  "mlflow.source.type": "LOCAL", "mlflow.source.git.commit": "e2ff784440ed019e74577f9eaa5f11ad2d4bcceb"}}'
+source_type: code

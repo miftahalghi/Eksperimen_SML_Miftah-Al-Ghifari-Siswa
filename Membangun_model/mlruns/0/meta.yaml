@@ -1,8 +1,8 @@
 artifact_location: file:///C:/Users/Lenovo/Downloads/SMSML_Miftah Al Ghifari-Siswa/Membangun_model/mlruns/0
-creation_time: 1780661152963
+creation_time: 1780676505630
 effective_trace_archival_retention: null
 experiment_id: '0'
-last_update_time: 1780661152963
+last_update_time: 1780676505630
 lifecycle_stage: active
 name: Default
 trace_location: null

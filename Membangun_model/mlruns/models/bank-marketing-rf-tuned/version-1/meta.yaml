@@ -1,0 +1,16 @@
+creation_timestamp: 1780676921150
+current_stage: None
+deployment_job_state: null
+description: null
+last_updated_timestamp: 1780676921150
+model_id: m-90c6493327db462d8762e42cbe4549f7
+name: bank-marketing-rf-tuned
+run_id: 81d4be4b679d4db997ce6b155fbedd30
+run_link: null
+source: models:/m-90c6493327db462d8762e42cbe4549f7
+status: READY
+status_message: null
+storage_location: file:///C:/Users/Lenovo/Downloads/SMSML_Miftah Al Ghifari-Siswa/Membangun_model/mlruns/846904162290394882/models/m-90c6493327db462d8762e42cbe4549f7/artifacts
+user_id: null
+version: 1
+workspace: default
