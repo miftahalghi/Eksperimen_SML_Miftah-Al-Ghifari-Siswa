@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/Lenovo/Downloads/SMSML_Miftah Al Ghifari-Siswa/Membangun_model/mlruns/312433295806500256/8236c850d29d42f8a0ac9852fbbf4ea3/artifacts
+end_time: 1780661161760
+entry_point_name: ''
+experiment_id: '312433295806500256'
+lifecycle_stage: active
+run_id: 8236c850d29d42f8a0ac9852fbbf4ea3
+run_name: RandomForest_Autolog
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1780661154042
+status: 3
+tags: []
+user_id: Lenovo

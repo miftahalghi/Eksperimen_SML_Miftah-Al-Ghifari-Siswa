@@ -1,0 +1,16 @@
+creation_timestamp: 1780665440282
+current_stage: None
+deployment_job_state: null
+description: null
+last_updated_timestamp: 1780665440282
+model_id: m-87b988f6f4484c0aa7f53212ca9e5a24
+name: wine-quality-rf-tuned
+run_id: 910d6d5ebf474d71bbba02c728cc6f55
+run_link: null
+source: models:/m-87b988f6f4484c0aa7f53212ca9e5a24
+status: READY
+status_message: null
+storage_location: file:///C:/Users/Lenovo/Downloads/SMSML_Miftah Al Ghifari-Siswa/Membangun_model/mlruns/337512767810363430/models/m-87b988f6f4484c0aa7f53212ca9e5a24/artifacts
+user_id: null
+version: 2
+workspace: default

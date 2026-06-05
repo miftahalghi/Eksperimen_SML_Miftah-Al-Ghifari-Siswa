@@ -1,0 +1,9 @@
+artifact_location: file:///C:/Users/Lenovo/Downloads/SMSML_Miftah Al Ghifari-Siswa/Membangun_model/mlruns/337512767810363430
+creation_time: 1780661166780
+effective_trace_archival_retention: null
+experiment_id: '337512767810363430'
+last_update_time: 1780661166780
+lifecycle_stage: active
+name: Wine_Quality_Classification_Tuning
+trace_location: null
+workspace: default
